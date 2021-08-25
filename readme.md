@@ -7,14 +7,13 @@ This is an example of how you can use this package
 ```js
 import SbBackup from 'storyblok-assets-backup'
 
-const sbBackup = new SbBackup(
-  {
+const sbBackup = new SbBackup({
     token: '', 
     storage: 's3',
     s3Settings: {
-    accessKeyId: '',
-    secretAccessKey: ''
-  }
+      accessKeyId: '',
+      secretAccessKey: ''
+    }
 })
 
 sbBackup.backupSpace(123456)
