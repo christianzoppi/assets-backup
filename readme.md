@@ -4,13 +4,14 @@ Backup all the assets of your spaces. You can perform the backup for specific sp
 ## Getting Started
 This is an example of how you can use this package
 
-```
+```js
 import SbBackup from 'storyblok-assets-backup'
 
 const sbBackup = new SbBackup(
-  {token: '', 
-  storage: 's3',
-  s3Settings: {
+  {
+    token: '', 
+    storage: 's3',
+    s3Settings: {
     accessKeyId: '',
     secretAccessKey: ''
   }
