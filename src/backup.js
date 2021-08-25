@@ -3,6 +3,13 @@ import S3Storage from './storage/s3.js'
 import StoryblokClient from 'storyblok-js-client'
 
 export default class SbBackup {
+  /**
+   * Create a new instance of the SbBackup tool
+   * @param {int} param0.token The oauth token of the user
+   * @param {string} param0.storage local or s3, it's the type of storage
+   * @param {string} param0.basePath The local path of the backups
+   * @param {string} param0.s3Settings The settings for the s3 authentication
+   */
   constructor({ token, storage, basePath, s3Settings }) {
     this.sbClient = new StoryblokClient({
       oauthToken: token
@@ -19,6 +26,9 @@ export default class SbBackup {
     }
   }
 
+  /**
+   * Backup all the spaces in an account
+   */
   async backupAllSpaces() {
     try {
       const spaces = await this.sbClient.get(`spaces`)
@@ -34,6 +44,10 @@ export default class SbBackup {
     }
   }
 
+  /**
+   * Backup a single space
+   * @param {int} spaceId The id of the space
+   */
   async backupSpace(spaceId) {
     try {
       this.storage.setSpace(spaceId)
@@ -51,6 +65,11 @@ export default class SbBackup {
     }
   }
 
+  /**
+   * Get all the assets objects from a space
+   * @param {int} spaceId The space id
+   * @returns 
+   */
   async getAssets(spaceId) {
     try {
       const assetsPageRequest = await this.sbClient.get(`spaces/${spaceId}/assets`, {
