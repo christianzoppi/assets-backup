@@ -1,0 +1,26 @@
+{
+  "name": "storyblok-assets-backup",
+  "version": "0.1.0",
+  "description": "Tool to perform a differential backup of the assets of any space.",
+  "main": "src/backup.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/christianzoppi/assets-backup.git"
+  },
+  "author": "Christian Zoppi",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/christianzoppi/assets-backup/issues"
+  },
+  "homepage": "https://github.com/christianzoppi/assets-backup#readme",
+  "dependencies": {
+    "async": "^3.2.1",
+    "aws-sdk": "^2.974.0",
+    "axios": "^0.21.1",
+    "storyblok-js-client": "^4.1.3"
+  }
+}
