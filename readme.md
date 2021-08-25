@@ -32,7 +32,7 @@ The settings of the constructor of the class `SbBackup` are:
 All instances of the `SbBackup` class can perform 2 actions: backup a space or backup all the spaces.
 
 ### SbBackup.backupSpace(spaceId)
-This method can backpu a single space. You have to provide the space id as argument.
+This method can backup a single space. You have to provide the space id as an argument.
 
 **Example**:
 ```
@@ -48,6 +48,6 @@ sbBackup.backupAllSpaces()
 ```
 
 ## Data structure
-The script will store the organise the content creating a folder for each space, the folder will have the id of the space. Inside the folder of the space there will be a folder with the id of each asset. Inside the folder of each asset there will be the asset itself and a file called `sb_asset_data.json` with the [Asset Object](https://www.storyblok.com/docs/api/management#core-resources/assets/the-asset-object) from the Storyblok MAPI.The structure will be the same for both the `local` and the `s3` backups.
+The script will store and organise the content by creating a folder for each space, the folder will have the id of the space. Inside the folder of the space there will be a folder with the id of each asset. Inside the folder of each asset there will be the asset itself and a file called `sb_asset_data.json` with the [Asset Object](https://www.storyblok.com/docs/api/management#core-resources/assets/the-asset-object) from the Storyblok MAPI. The structure will be the same for both the `local` and the `s3` backups.
 
-When performing the S3 backup the script will create a `./temp` folder to store temporary the files before sending them to the bucket.
+When performing the S3 backup the script will create a `./temp` folder to store the files temporarily before sending them to the bucket.
