@@ -5,7 +5,7 @@ import StoryblokClient from 'storyblok-js-client'
 export default class SbBackup {
   /**
    * Create a new instance of the SbBackup tool
-   * @param {int} param0.token The oauth token of the user
+   * @param {string} param0.token The oauth token of the user
    * @param {string} param0.storage local or s3, it's the type of storage
    * @param {string} param0.basePath The local path of the backups
    * @param {string} param0.s3Settings The settings for the s3 authentication
