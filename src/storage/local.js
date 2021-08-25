@@ -1,6 +1,5 @@
 import BackupStorage from './backup-storage.js'
 import fs from 'fs'
-import https from 'https'
 
 export default class LocalStorage extends BackupStorage {
   constructor(options) {
