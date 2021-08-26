@@ -40,7 +40,7 @@ export default class SbBackup {
         console.log('No spaces to backup.')
       }
     } catch (err) {
-      console.error(`An error occurred while fetching the spaces: ${err.message}`)
+      console.error(`✖ An error occurred while fetching the spaces: ${err.message}`)
     }
   }
 
@@ -60,8 +60,8 @@ export default class SbBackup {
         console.log(`✓ No new assets to backup in space ${spaceId}`)
       }
     } catch (err) {
-      console.log(err)
-      console.log(`✖ Backup task interrupted because of an error`)
+      console.error(err)
+      console.error(`✖ Backup task interrupted because of an error`)
     }
   }
 
@@ -89,7 +89,7 @@ export default class SbBackup {
       const assetsResponses = await Promise.all(assetsRequests)
       return assetsResponses.map(r => r.data.assets).flat()
     } catch (err) {
-      console.log('Error fetching the assets. Please double check the source space id.')
+      console.error('✖ Error fetching the assets. Please double check the source space id.')
     }
   }
 }
