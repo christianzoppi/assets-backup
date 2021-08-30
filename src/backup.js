@@ -5,7 +5,7 @@ import StoryblokClient from 'storyblok-js-client'
 export default class SbBackup {
   /**
    * Create a new instance of the SbBackup tool
-   * @param {int} param0.token The oauth token of the user
+   * @param {string} param0.token The oauth token of the user
    * @param {string} param0.storage local or s3, it's the type of storage
    * @param {string} param0.basePath The local path of the backups
    * @param {string} param0.s3Settings The settings for the s3 authentication
@@ -40,7 +40,7 @@ export default class SbBackup {
         console.log('No spaces to backup.')
       }
     } catch (err) {
-      console.error(`An error occurred while fetching the spaces: ${err.message}`)
+      console.error(`✖ An error occurred while fetching the spaces: ${err.message}`)
     }
   }
 
@@ -60,8 +60,8 @@ export default class SbBackup {
         console.log(`✓ No new assets to backup in space ${spaceId}`)
       }
     } catch (err) {
-      console.log(err)
-      console.log(`✖ Backup task interrupted because of an error`)
+      console.error(err)
+      console.error(`✖ Backup task interrupted because of an error`)
     }
   }
 
@@ -89,7 +89,7 @@ export default class SbBackup {
       const assetsResponses = await Promise.all(assetsRequests)
       return assetsResponses.map(r => r.data.assets).flat()
     } catch (err) {
-      console.log('Error fetching the assets. Please double check the source space id.')
+      console.error('✖ Error fetching the assets. Please double check the source space id.')
     }
   }
 }

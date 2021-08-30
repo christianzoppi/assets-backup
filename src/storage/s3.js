@@ -37,7 +37,7 @@ export default class S3Storage extends BackupStorage {
       fs.rmdirSync(this.getAssetDirectory(asset), { recursive: true })
       return true
     } catch (err) {
-      console.log(err)
+      console.error(err)
       fs.rmdirSync(this.getAssetDirectory(asset), { recursive: true })
       return false
     }
