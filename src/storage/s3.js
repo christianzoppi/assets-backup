@@ -25,7 +25,7 @@ export default class S3Storage extends BackupStorage {
    * Override of the default method
    */
    async backedupAssets() {
-    return (await this.backedupAssetsIds()).map((assetId) =>
+    return (await this.backedupAssetsIds()).map(async (assetId) =>
       JSON.parse(
         (
           await this.s3Client
