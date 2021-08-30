@@ -18,6 +18,17 @@ export default class LocalStorage extends BackupStorage {
   /**
    * Override of the default method
    */
+  async backedupAssets () {
+    return (await this.backedupAssetsIds()).map(assetId => 
+      JSON.parse(
+        fs.readFileSync(`${this.spaceDirectory}/${assetId}/sb_asset_data.json`)
+      )
+    )
+  }
+
+  /**
+   * Override of the default method
+   */
   async backupAsset(asset) {
     if (!fs.existsSync(this.getAssetDirectory(asset))) {
       fs.mkdirSync(this.getAssetDirectory(asset), { recursive: true })

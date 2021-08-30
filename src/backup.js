@@ -9,12 +9,14 @@ export default class SbBackup {
    * @param {string} param0.storage local or s3, it's the type of storage
    * @param {string} param0.basePath The local path of the backups
    * @param {string} param0.s3Settings The settings for the s3 authentication
+   * @param {boolean} param0.metadata Check for updated metadata
    */
-  constructor({ token, storage, basePath, s3Settings }) {
+  constructor({ token, storage, basePath, s3Settings, metadata = true }) {
     this.sbClient = new StoryblokClient({
       oauthToken: token
     }, 'https://mapi.storyblok.com/v1/')
 
+    this.metadata = metadata
     storage = storage || 'local'
     switch (storage) {
       case 'local':
@@ -51,8 +53,20 @@ export default class SbBackup {
   async backupSpace(spaceId) {
     try {
       this.storage.setSpace(spaceId)
-      const backedUpAssetsIds = await this.storage.backedupAssetsIds()
-      const assets = (await this.getAssets(spaceId)).filter(asset => !backedUpAssetsIds.includes(asset.id))
+      let assets
+      if (this.metadata) {
+        const backedUpAssets = await this.storage.backedupAssets()
+        assets = (await this.getAssets(spaceId)).filter(asset => {
+          return backedUpAssets.filter(bAsset => {
+            if (bAsset.id === asset.id) {
+              return new Date(bAsset.updated_at) < new Date(asset.updated_at)
+            } 
+          }).length
+        })
+      } else {
+        const backedUpAssetsIds = await this.storage.backedupAssetsIds()
+        assets = (await this.getAssets(spaceId)).filter(asset => !backedUpAssetsIds.includes(asset.id))
+      }
       if (assets.length) {
         await this.storage.backupAssets(assets)
         console.log(`✓ Assets of space ${spaceId} backed up correctly`)

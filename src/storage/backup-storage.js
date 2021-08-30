@@ -54,6 +54,14 @@ export default class BackupStorage {
   }
 
   /**
+   * Return the list of the assets already backed up.
+   * @returns {Array} An array of asset objects
+   */
+  async backedupAssets () {
+    console.log('You forgot to override the "backedupAssets" method')
+  }
+
+  /**
    * Backs up an asset. It must return true or false depending on the success
    * of the action
    * @param {Object} asset The asset object from Storyblok

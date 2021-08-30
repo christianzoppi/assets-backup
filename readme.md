@@ -13,7 +13,8 @@ const sbBackup = new SbBackup({
     s3Settings: {
       accessKeyId: '',
       secretAccessKey: ''
-    }
+    },
+    metadata: true
 })
 
 sbBackup.backupSpace(123456)
@@ -27,6 +28,7 @@ The settings of the constructor of the class `SbBackup` are:
 - **basePath**: optional, defaults to `./backups` - this is the path of the backup folder in case you are performing a local backup;
 - **s3Settings.accessKeyId**: optional - this is the IAM access key id for authentication on your S3 bucket;  
 - **s3Settings.secretAccessKey**: optional - this is the IAM secret access key for authentication on your S3 bucket.
+- **metadata**: optional, defaults to `true` - indicates if metadata should be checked for updates. If metadata changed the asset will be backed up again.
 
 ## Methods
 All instances of the `SbBackup` class can perform 2 actions: backup a space or backup all the spaces.
