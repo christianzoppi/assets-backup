@@ -17,7 +17,7 @@ export default class S3Storage extends BackupStorage {
    * Override of the default method
    */
   async backedupAssetsIds() {
-    const r = await this.s3Client.listObjectsV2({ Bucket: `${this.bucket}` }).promise()
+    const r = await this.s3Client.listObjectsV2({ Bucket: `${this.bucket}`, Prefix: `${this.spaceId}` }).promise()
     return r.Contents.filter(item => item.Key.includes('/sb_asset_data.json')).map(item => parseInt(item.Key.split('/')[1]))
   }
 
@@ -25,18 +25,22 @@ export default class S3Storage extends BackupStorage {
    * Override of the default method
    */
    async backedupAssets() {
-    return (await this.backedupAssetsIds()).map(async (assetId) =>
-      JSON.parse(
-        (
-          await this.s3Client
-            .getObject({
-              Bucket: this.bucket,
-              Key: `${this.spaceId}/${assetId}/sb_asset_data.json`,
-            })
-            .promise()
-        ).Body.toString('utf-8')
+    const promises = []
+    for (const assetId of await this.backedupAssetsIds()) {
+      promises.push(
+        this.s3Client
+          .getObject({
+            Bucket: this.bucket,
+            Key: `${this.spaceId}/${assetId}/sb_asset_data.json`,
+          })
+          .promise()
       )
-    )
+    }
+    return (await Promise.allSettled(promises))
+      .filter(p => p.status === 'fulfilled')
+      .map((asset) =>
+        JSON.parse(asset?.value.Body.toString('utf-8'))
+      )
   }
 
   /**
