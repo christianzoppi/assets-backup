@@ -33,10 +33,10 @@ export default class BackupStorage {
           console.log(`Error backing up ${asset.filename}`)
         }
       }, (err) => {
-        if(err) {
+        if (err) {
           return reject(false)
         }
-        if(typeof this.afterBackupCallback === 'function') {
+        if (typeof this.afterBackupCallback === 'function') {
           this.afterBackupCallback()
         }
         return resolve(true)
@@ -57,7 +57,7 @@ export default class BackupStorage {
    * Return the list of the assets already backed up.
    * @returns {Array} An array of asset objects
    */
-  async backedupAssets () {
+  async backedupAssets() {
     console.log('You forgot to override the "backedupAssets" method')
   }
 
@@ -70,7 +70,7 @@ export default class BackupStorage {
   async backupAsset(asset) {
     console.log('You forgot to override the "backupAsset" method')
   }
-  
+
   /**
    * The space directory
    */
@@ -95,7 +95,7 @@ export default class BackupStorage {
   async downloadAsset(asset) {
     const filename = asset.filename.split('/').pop()
     const file = fs.createWriteStream(`${this.getAssetDirectory(asset)}/${filename}`)
-    
+
     return new Promise((resolve, reject) => {
       https.get(asset.filename, (res) => {
         if (res.statusCode === 200) {

@@ -59,7 +59,7 @@ export default class SbBackup {
         assets = (await this.getAssets(spaceId)).filter(asset => {
           const match = backedUpAssets.find(bAsset => bAsset.id === asset.id)
           if (match) {
-            return new Date(asset.updated_at) > new Date(match.updated_at) 
+            return asset.updated_at !== match.updated_at
           } else {
             return true
           }

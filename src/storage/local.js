@@ -9,21 +9,25 @@ export default class LocalStorage extends BackupStorage {
   /**
    * Override of the default method
    */
-  async backedupAssetsIds () {
+  async backedupAssetsIds() {
     return fs.readdirSync(this.spaceDirectory, { withFileTypes: true })
-          .filter(file => file.isDirectory())
-          .map(file => parseInt(file.name))
+      .filter(file => file.isDirectory())
+      .map(file => parseInt(file.name))
   }
 
   /**
    * Override of the default method
    */
-  async backedupAssets () {
-    return (await this.backedupAssetsIds()).map(assetId => 
-      JSON.parse(
-        fs.readFileSync(`${this.spaceDirectory}/${assetId}/sb_asset_data.json`)
-      )
-    )
+  async backedupAssets() {
+    const assetIds = await this.backedupAssetsIds()
+    return assetIds.map((assetId) => {
+      const metaDataFile = fs.readdirSync(`${this.spaceDirectory}/${assetId}`, { withFileTypes: true })
+        .find(dirEntry => dirEntry.name.startsWith('sb_asset_data_'))
+      return {
+        id: assetId,
+        updated_at: metaDataFile.name.match(/sb_asset_data_(.*).json/)[1]
+      }
+    })
   }
 
   /**
@@ -34,7 +38,7 @@ export default class LocalStorage extends BackupStorage {
       fs.mkdirSync(this.getAssetDirectory(asset), { recursive: true })
     }
     try {
-      fs.writeFileSync(`${this.getAssetDirectory(asset)}/sb_asset_data.json`, JSON.stringify(asset, null, 4))
+      fs.writeFileSync(`${this.getAssetDirectory(asset)}/sb_asset_data_${asset.updated_at}.json`, JSON.stringify(asset, null, 4))
       await this.downloadAsset(asset)
       return true
     } catch (err) {

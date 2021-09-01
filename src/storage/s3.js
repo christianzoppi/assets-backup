@@ -17,30 +17,22 @@ export default class S3Storage extends BackupStorage {
    * Override of the default method
    */
   async backedupAssetsIds() {
-    const r = await this.s3Client.listObjectsV2({ Bucket: `${this.bucket}`, Prefix: `${this.spaceId}` }).promise()
-    return r.Contents.filter(item => item.Key.includes('/sb_asset_data.json')).map(item => parseInt(item.Key.split('/')[1]))
+    return await this.backedupAssets.map(asset => asset.id)
   }
 
   /**
    * Override of the default method
    */
-   async backedupAssets() {
-    const promises = []
-    for (const assetId of await this.backedupAssetsIds()) {
-      promises.push(
-        this.s3Client
-          .getObject({
-            Bucket: this.bucket,
-            Key: `${this.spaceId}/${assetId}/sb_asset_data.json`,
-          })
-          .promise()
-      )
-    }
-    return (await Promise.allSettled(promises))
-      .filter(p => p.status === 'fulfilled')
-      .map((asset) =>
-        JSON.parse(asset?.value.Body.toString('utf-8'))
-      )
+  async backedupAssets() {
+    const r = await this.s3Client.listObjectsV2({ Bucket: `${this.bucket}`, Prefix: `${this.spaceId}` }).promise()
+    return r.Contents
+      .filter(item => item.Key.includes('/sb_asset_data_'))
+      .map(item => {
+        return {
+          id: parseInt(item.Key.split('/')[1]),
+          updated_at: item.Key.match(/\/sb_asset_data_(.*).json/)[1]
+        }
+      })
   }
 
   /**
@@ -52,7 +44,7 @@ export default class S3Storage extends BackupStorage {
     }
     try {
       await this.downloadAsset(asset)
-      await this.s3Client.putObject({ Bucket: this.bucket, Key: `${this.spaceId}/${asset.id}/sb_asset_data.json`, Body: JSON.stringify(asset, null, 4) }).promise()
+      await this.s3Client.putObject({ Bucket: this.bucket, Key: `${this.spaceId}/${asset.id}/sb_asset_data_${asset.updated_at}.json`, Body: JSON.stringify(asset, null, 4) }).promise()
       const filename = asset.filename.split('/').pop()
       const assetStream = fs.createReadStream(`${this.getAssetDirectory(asset)}/${filename}`)
       await this.s3Client.putObject({ Bucket: this.bucket, Key: `${this.spaceId}/${asset.id}/${filename}`, Body: assetStream }).promise()
