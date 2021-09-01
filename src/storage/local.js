@@ -20,14 +20,19 @@ export default class LocalStorage extends BackupStorage {
    */
   async backedupAssets() {
     const assetIds = await this.backedupAssetsIds()
-    return assetIds.map((assetId) => {
+    const assets = []
+    for (const assetId of assetIds) {
       const metaDataFile = fs.readdirSync(`${this.spaceDirectory}/${assetId}`, { withFileTypes: true })
         .find(dirEntry => dirEntry.name.startsWith('sb_asset_data_'))
-      return {
-        id: assetId,
-        updated_at: metaDataFile.name.match(/sb_asset_data_(.*).json/)[1]
+      const timestamp = metaDataFile?.name?.match(/sb_asset_data_(.*).json/)[1]
+      if (timestamp) {
+        assets.push({
+          id: assetId,
+          updated_at: timestamp
+        })
       }
-    })
+    }
+    return assets
   }
 
   /**
