@@ -9,19 +9,20 @@ export default class SbBackup {
    * @param {string} param0.storage local or s3, it's the type of storage
    * @param {string} param0.basePath The local path of the backups
    * @param {string} param0.s3Settings The settings for the s3 authentication
+   * @param {boolean} param0.metadata Check for updated metadata
    */
-  constructor({ token, storage, basePath, s3Settings }) {
+  constructor({ token, storage = 'local', basePath, s3Settings, metadata = true }) {
     this.sbClient = new StoryblokClient({
       oauthToken: token
     }, 'https://mapi.storyblok.com/v1/')
 
-    storage = storage || 'local'
+    const storageOptions = { basePath, metadata, sbClient: this.sbClient }
     switch (storage) {
       case 'local':
-        this.storage = new LocalStorage({ basePath })
+        this.storage = new LocalStorage(storageOptions)
         break
       case 's3':
-        this.storage = new S3Storage({ basePath, s3Settings })
+        this.storage = new S3Storage({ s3Settings, ...storageOptions })
         break
     }
   }
@@ -51,10 +52,9 @@ export default class SbBackup {
   async backupSpace(spaceId) {
     try {
       this.storage.setSpace(spaceId)
-      const backedUpAssetsIds = await this.storage.backedupAssetsIds()
-      const assets = (await this.getAssets(spaceId)).filter(asset => !backedUpAssetsIds.includes(asset.id))
-      if (assets.length) {
-        await this.storage.backupAssets(assets)
+      const assetsToBackup = await this.storage.assetsToBackup()
+      if (assetsToBackup.length) {
+        await this.storage.backupAssets()
         console.log(`✓ Assets of space ${spaceId} backed up correctly`)
       } else {
         console.log(`✓ No new assets to backup in space ${spaceId}`)
@@ -62,34 +62,6 @@ export default class SbBackup {
     } catch (err) {
       console.error(err)
       console.error(`✖ Backup task interrupted because of an error`)
-    }
-  }
-
-  /**
-   * Get all the assets objects from a space
-   * @param {int} spaceId The space id
-   * @returns 
-   */
-  async getAssets(spaceId) {
-    try {
-      const assetsPageRequest = await this.sbClient.get(`spaces/${spaceId}/assets`, {
-        per_page: 100,
-        page: 1
-      })
-      const pagesTotal = Math.ceil(assetsPageRequest.headers.total / 100)
-      const assetsRequests = []
-      for (let i = 1; i <= pagesTotal; i++) {
-        assetsRequests.push(
-          this.sbClient.get(`spaces/${spaceId}/assets`, {
-            per_page: 100,
-            page: i
-          })
-        )
-      }
-      const assetsResponses = await Promise.all(assetsRequests)
-      return assetsResponses.map(r => r.data.assets).flat()
-    } catch (err) {
-      console.error('✖ Error fetching the assets. Please double check the source space id.')
     }
   }
 }

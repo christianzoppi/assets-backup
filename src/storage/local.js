@@ -1,4 +1,5 @@
 import BackupStorage from './backup-storage.js'
+import glob from 'glob'
 import fs from 'fs'
 
 export default class LocalStorage extends BackupStorage {
@@ -9,10 +10,18 @@ export default class LocalStorage extends BackupStorage {
   /**
    * Override of the default method
    */
-  async backedupAssetsIds () {
-    return fs.readdirSync(this.spaceDirectory, { withFileTypes: true })
-          .filter(file => file.isDirectory())
-          .map(file => parseInt(file.name))
+  async backedUpAssets() {
+    const assets = glob.sync(`${this.spaceDirectory}/**/sb_asset_data_*.json`)
+
+    return assets.map(file => {
+      const path_parts = file.split('/')
+      const timestamp = file.match(/sb_asset_data_(.*).json/)[1]
+
+      return {
+        id: parseInt(path_parts[path_parts.length - 2]),
+        updated_at: parseInt(timestamp)
+      }
+    })
   }
 
   /**
@@ -23,7 +32,7 @@ export default class LocalStorage extends BackupStorage {
       fs.mkdirSync(this.getAssetDirectory(asset), { recursive: true })
     }
     try {
-      fs.writeFileSync(`${this.getAssetDirectory(asset)}/sb_asset_data.json`, JSON.stringify(asset, null, 4))
+      fs.writeFileSync(`${this.getAssetDirectory(asset)}/${this.getAssetDataFilename(asset)}`, JSON.stringify(asset, null, 4))
       await this.downloadAsset(asset)
       return true
     } catch (err) {

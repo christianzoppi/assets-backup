@@ -16,9 +16,16 @@ export default class S3Storage extends BackupStorage {
   /**
    * Override of the default method
    */
-  async backedupAssetsIds() {
-    const r = await this.s3Client.listObjectsV2({ Bucket: `${this.bucket}` }).promise()
-    return r.Contents.filter(item => item.Key.includes('/sb_asset_data.json')).map(item => parseInt(item.Key.split('/')[1]))
+  async backedUpAssets() {
+    const r = await this.s3Client.listObjectsV2({ Bucket: `${this.bucket}`, Prefix: `${this.spaceId}` }).promise()
+    return this.backedUpAssetsArray = r.Contents
+      .filter(item => item.Key.includes('/sb_asset_data_'))
+      .map(item => {
+        return {
+          id: parseInt(item.Key.split('/')[1]),
+          updated_at: parseInt(item.Key.match(/\/sb_asset_data_(.*).json/)[1])
+        }
+      })
   }
 
   /**
@@ -30,7 +37,7 @@ export default class S3Storage extends BackupStorage {
     }
     try {
       await this.downloadAsset(asset)
-      await this.s3Client.putObject({ Bucket: this.bucket, Key: `${this.spaceId}/${asset.id}/sb_asset_data.json`, Body: JSON.stringify(asset, null, 4) }).promise()
+      await this.s3Client.putObject({ Bucket: this.bucket, Key: `${this.spaceId}/${asset.id}/${this.getAssetDataFilename(asset)}`, Body: JSON.stringify(asset, null, 4) }).promise()
       const filename = asset.filename.split('/').pop()
       const assetStream = fs.createReadStream(`${this.getAssetDirectory(asset)}/${filename}`)
       await this.s3Client.putObject({ Bucket: this.bucket, Key: `${this.spaceId}/${asset.id}/${filename}`, Body: assetStream }).promise()

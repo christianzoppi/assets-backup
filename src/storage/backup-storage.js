@@ -7,6 +7,8 @@ export default class BackupStorage {
     this.simultaneousBackups = 10
     // The base path  is the root of your local 
     this.basePath = options?.basePath?.replace(/^\/+|\/+$/g, '') || './backups'
+    this.metadata = options?.metadata
+    this.sbClient = options?.sbClient
   }
 
   /**
@@ -18,6 +20,8 @@ export default class BackupStorage {
     if (!fs.existsSync(this.spaceDirectory)) {
       fs.mkdirSync(this.spaceDirectory, { recursive: true })
     }
+    this.assetsArray = null
+    this.assetsToBackupArray = null
   }
 
   /**
@@ -25,18 +29,20 @@ export default class BackupStorage {
    * @param {Array} assets The array of the assets' objects from Storyblok
    * @return {Promise} The Promise will return a true or false 
    */
-  async backupAssets(assets) {
+  async backupAssets() {
+    let assetsToBackup =  await this.assetsToBackup()
+    
     return new Promise((resolve, reject) => {
-      async.eachLimit(assets, this.simultaneousBackups, async (asset) => {
+      async.eachLimit(assetsToBackup, this.simultaneousBackups, async (asset) => {
         const backupAssetRes = await this.backupAsset(asset)
         if (!backupAssetRes) {
           console.log(`Error backing up ${asset.filename}`)
         }
       }, (err) => {
-        if(err) {
+        if (err) {
           return reject(false)
         }
-        if(typeof this.afterBackupCallback === 'function') {
+        if (typeof this.afterBackupCallback === 'function') {
           this.afterBackupCallback()
         }
         return resolve(true)
@@ -45,12 +51,11 @@ export default class BackupStorage {
   }
 
   /**
-   * Return the list of the ids in the backup. It must
-   * return an array of integers
-   * @returns {Array} An array of integers with all the ids
+   * Return the list of the assets already backed up.
+   * @returns {Array} An array of asset objects
    */
-  async backedupAssetsIds() {
-    console.log('You forgot to override the "backedupAssetsIds" method')
+  async backedUpAssets() {
+    console.log('You forgot to override the "backedUpAssets" method')
   }
 
   /**
@@ -62,7 +67,7 @@ export default class BackupStorage {
   async backupAsset(asset) {
     console.log('You forgot to override the "backupAsset" method')
   }
-  
+
   /**
    * The space directory
    */
@@ -80,6 +85,30 @@ export default class BackupStorage {
   }
 
   /**
+   * Get the assets to backup
+   */
+  async assetsToBackup() {
+    if(!this.assetsToBackupArray) {
+      const backedUpAssets = await this.backedUpAssets()
+      if (this.metadata) {
+        const assets = await this.getAssets()
+        this.assetsToBackupArray = assets.filter(asset => {
+          const match = backedUpAssets.find(bAsset => bAsset.id === asset.id)
+          if (match) {
+            return new Date(asset.updated_at).getTime() !== match.updated_at
+          } else {
+            return true
+          }
+        })
+      } else {
+        const backedUpAssetsIds = backedUpAssets.map(asset => asset.id)
+        this.assetsToBackupArray = assets.filter(asset => !backedUpAssetsIds.includes(asset.id))
+      }
+    }
+    return this.assetsToBackupArray
+  }
+
+  /**
    * Download an asset locally
    * @param {Object} asset The asset object from Storyblok
    * @returns 
@@ -87,7 +116,7 @@ export default class BackupStorage {
   async downloadAsset(asset) {
     const filename = asset.filename.split('/').pop()
     const file = fs.createWriteStream(`${this.getAssetDirectory(asset)}/${filename}`)
-    
+
     return new Promise((resolve, reject) => {
       https.get(asset.filename, (res) => {
         if (res.statusCode === 200) {
@@ -102,5 +131,45 @@ export default class BackupStorage {
         return reject(false)
       })
     })
+  }
+
+  /**
+   * Get all the assets objects from a space
+   * @returns 
+   */
+  async getAssets() {
+    if(!this.assetsArray) {
+      try {
+        const assetsPageRequest = await this.sbClient.get(`spaces/${this.spaceId}/assets`, {
+          per_page: 100,
+          page: 1
+        })
+        const pagesTotal = Math.ceil(assetsPageRequest.headers.total / 100)
+        const assetsRequests = []
+        for (let i = 1; i <= pagesTotal; i++) {
+          assetsRequests.push(
+            this.sbClient.get(`spaces/${this.spaceId}/assets`, {
+              per_page: 100,
+              page: i
+            })
+          )
+        }
+        const assetsResponses = await Promise.all(assetsRequests)
+        this.assetsArray = assetsResponses.map(r => r.data.assets).flat()
+      } catch (err) {
+        console.error('✖ Error fetching the assets. Please double check the source space id.')
+      }
+    }
+    return this.assetsArray
+  }
+
+  /**
+   * Get the filename of the data of an asset
+   * @param {Object} asset The asset object
+   * @returns 
+   */
+  getAssetDataFilename(asset) {
+    const timestamp = new Date(asset.updated_at).getTime()
+    return `sb_asset_data_${timestamp}.json`;
   }
 }
