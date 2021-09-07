@@ -42,6 +42,9 @@ export default class S3Storage extends BackupStorage {
       const assetStream = fs.createReadStream(`${this.getAssetDirectory(asset)}/${filename}`)
       await this.s3Client.putObject({ Bucket: this.bucket, Key: `${this.spaceId}/${asset.id}/${filename}`, Body: assetStream }).promise()
       fs.rmdirSync(this.getAssetDirectory(asset), { recursive: true })
+      const r = await this.s3Client.listObjectsV2({Bucket: `${this.bucket}`, Prefix: `${this.spaceId}/${asset.id}/sb_asset_data_`}).promise()
+      const metadataFiles = r.Contents.filter(f => f.Key !== `${this.spaceId}/${asset.id}/${this.getAssetDataFilename(asset)}`)
+      await this.s3Client.deleteObjects({Bucket: `${this.bucket}`, Delete: {Objects: metadataFiles.map(f => {return {Key: f.Key}})}}).promise()
       return true
     } catch (err) {
       console.error(err)
