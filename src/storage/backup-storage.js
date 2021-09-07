@@ -42,9 +42,6 @@ export default class BackupStorage {
         if (err) {
           return reject(false)
         }
-        if (typeof this.afterBackupCallback === 'function') {
-          this.afterBackupCallback()
-        }
         return resolve(true)
       })
     })

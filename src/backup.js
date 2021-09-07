@@ -58,9 +58,9 @@ export default class SbBackup {
         console.log(`✓ Assets of space ${spaceId} backed up correctly`)
       } else {
         console.log(`✓ No new assets to backup in space ${spaceId}`)
-        if (typeof this.storage.afterBackupCallback === 'function') {
-          this.storage.afterBackupCallback()
-        }
+      }
+      if (typeof this.storage.afterBackupCallback === 'function') {
+        this.storage.afterBackupCallback()
       }
     } catch (err) {
       console.error(err)
