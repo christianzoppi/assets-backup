@@ -93,4 +93,5 @@ Please see our [contributing guidelines](https://github.com/storyblok/.github/bl
 This project use [semantic-release](https://semantic-release.gitbook.io/semantic-release/) for generate new versions by using commit messages and we use the Angular Convention to naming the commits. Check [this question](https://semantic-release.gitbook.io/semantic-release/support/faq#how-can-i-change-the-type-of-commits-that-trigger-a-release) about it in semantic-release FAQ.
 
 ### License  
+
 This repository is published under the [MIT license](LICENSE).
