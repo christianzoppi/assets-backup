@@ -59,6 +59,9 @@ export default class SbBackup {
       } else {
         console.log(`✓ No new assets to backup in space ${spaceId}`)
       }
+      if (typeof this.storage.afterBackupCallback === 'function') {
+        this.storage.afterBackupCallback()
+      }
     } catch (err) {
       console.error(err)
       console.error(`✖ Backup task interrupted because of an error`)
