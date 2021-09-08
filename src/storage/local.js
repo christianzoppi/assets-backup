@@ -27,13 +27,20 @@ export default class LocalStorage extends BackupStorage {
   /**
    * Override of the default method
    */
-  async backupAsset(asset) {
+  async backupAsset({ asset, existing }) {
     if (!fs.existsSync(this.getAssetDirectory(asset))) {
       fs.mkdirSync(this.getAssetDirectory(asset), { recursive: true })
     }
+    const metaDataPath = `${this.getAssetDirectory(asset)}/${this.getAssetDataFilename(asset)}`
     try {
-      fs.writeFileSync(`${this.getAssetDirectory(asset)}/${this.getAssetDataFilename(asset)}`, JSON.stringify(asset, null, 4))
+      fs.writeFileSync(metaDataPath, JSON.stringify(asset, null, 4))
       await this.downloadAsset(asset)
+      if (existing) {
+        const metadataFiles = glob.sync(`${this.getAssetDirectory(asset)}/sb_asset_data_*.json`).filter(f => f !== metaDataPath)
+        for (const metadataFile of metadataFiles) {
+          fs.rmSync(metadataFile)
+        }
+      }
       return true
     } catch (err) {
       fs.rmdirSync(this.getAssetDirectory(asset), { recursive: true })
