@@ -87,6 +87,9 @@ When performing the S3 backup the script will create a `./temp` folder to store 
 
 * Do you have questions about Storyblok or you need help? [Join our Discord Community](https://discord.gg/jKrbAMz).
 
+### License
+This repository is published under the [MIT license](LICENSE).
+
 ### Contributing
 
 Please see our [contributing guidelines](https://github.com/storyblok/.github/blob/master/contributing.md) and our [code of conduct](https://www.storyblok.com/trust-center#code-of-conduct?utm_source=github.com&utm_medium=readme&utm_campaign=storyblok-js-client).
