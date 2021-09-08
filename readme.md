@@ -1,6 +1,6 @@
 <div align="center">
 	<h1 align="center">Storyblok Assets Backup</h1>
-	<p align="center">This is the script to perform incremental backups of assets uploaded in <a href="http://www.storyblok.com?utm_source=github.com&utm_medium=readme&utm_campaign=storyblok-js-client" target="_blank">Storyblok</a> to your local machine or an S3 bucket.</p>
+	<p align="center">This is the script to perform incremental backups of assets uploaded in <a href="http://www.storyblok.com?utm_source=github.com&utm_medium=readme&utm_campaign=assets-backup" target="_blank">Storyblok</a> to your local machine or an S3 bucket.</p>
 </div>
 
 <p align="center">
