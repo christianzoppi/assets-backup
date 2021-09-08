@@ -30,8 +30,8 @@ export default class BackupStorage {
    * @return {Promise} The Promise will return a true or false 
    */
   async backupAssets() {
-    let assetsToBackup =  await this.assetsToBackup()
-    
+    let assetsToBackup = await this.assetsToBackup()
+
     return new Promise((resolve, reject) => {
       async.eachLimit(assetsToBackup, this.simultaneousBackups, async (asset) => {
         const backupAssetRes = await this.backupAsset(asset)
@@ -88,21 +88,24 @@ export default class BackupStorage {
    * Get the assets to backup
    */
   async assetsToBackup() {
-    if(!this.assetsToBackupArray) {
+    if (!this.assetsToBackupArray) {
+      this.assetsToBackupArray = []
       const backedUpAssets = await this.backedUpAssets()
+      const assets = await this.getAssets()
       if (this.metadata) {
-        const assets = await this.getAssets()
-        this.assetsToBackupArray = assets.filter(asset => {
+        for (const asset of assets) {
           const match = backedUpAssets.find(bAsset => bAsset.id === asset.id)
           if (match) {
-            return new Date(asset.updated_at).getTime() !== match.updated_at
+            if (new Date(asset.updated_at).getTime() !== match.updated_at) {
+              this.assetsToBackupArray.push({ asset: asset, existing: true })
+            }
           } else {
-            return true
+            this.assetsToBackupArray.push({ asset: asset, existing: false })
           }
-        })
+        }
       } else {
-        const backedUpAssetsIds = backedUpAssets.map(asset => asset.id)
-        this.assetsToBackupArray = assets.filter(asset => !backedUpAssetsIds.includes(asset.id))
+        this.assetsToBackupArray = assets.filter(asset => !backedUpAssets.find(bAsset => bAsset.id === asset.id))
+          .map(asset => { return { asset: asset, existing: false } })
       }
     }
     return this.assetsToBackupArray
@@ -138,7 +141,7 @@ export default class BackupStorage {
    * @returns 
    */
   async getAssets() {
-    if(!this.assetsArray) {
+    if (!this.assetsArray) {
       try {
         const assetsPageRequest = await this.sbClient.get(`spaces/${this.spaceId}/assets`, {
           per_page: 100,
